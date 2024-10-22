@@ -57,9 +57,7 @@ class ChatbotApp:
         send_button.pack(pady=10)
         
         self.chats[chat_id] = {
-            'log': chat_log,
-            'history': [],
-            'context': {}
+            'log': chat_log
         }
         
         self.notebook.select(chat_frame)
@@ -74,16 +72,12 @@ class ChatbotApp:
         
         print(f"User input: {user_input}")
         
-        self.chats[chat_id]['history'].append(f"You: {user_input}")
-        
         self.root.after(100, self.get_response, (user_input, chat_log, chat_id))
         
     def get_response(self, data):
         user_input, chat_log, chat_id = data
         
-        chat_history = "\n".join(self.chats[chat_id]['history'])
-        
-        response_generator = self.llm.stream(chat_history + "\n" + user_input)
+        response_generator = self.llm.stream(user_input)
         
         chat_log.config(state='normal')
         chat_log.insert(tk.END, "BelteiGPT: ", 'bot')
@@ -102,8 +96,6 @@ class ChatbotApp:
                 chat_log.insert(tk.END, response_part, 'bot')
                 
             chat_log.config(state='disabled')
-            
-            self.chats[chat_id]['history'].append(f"Bot: {response_part}")
             
             self.root.after(100, self.update_response, response_generator, chat_log, chat_id)
         except StopIteration:
